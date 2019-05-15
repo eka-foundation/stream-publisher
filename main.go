@@ -15,15 +15,17 @@ import (
 )
 
 var (
-	host string
-	port string
-	dir  string
+	host  string
+	port  string
+	dir   string
+	iface string
 )
 
 func main() {
 	flag.StringVar(&host, "host", "", "host address to bind to")
 	flag.StringVar(&port, "port", "8080", "listening port")
 	flag.StringVar(&dir, "dir", "", "directory path to serve")
+	flag.StringVar(&iface, "iface", "wlp4s0", "interface to publish service info")
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "[serve] ", log.LstdFlags|log.Lshortfile)
@@ -57,6 +59,11 @@ func main() {
 		}
 	}()
 
+	mdns, err := publishmDNS(iface, port, logger)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	// listen for signals
 	signalCh := make(chan os.Signal, 1)
 	signal.Notify(signalCh, os.Interrupt, syscall.SIGTERM)
@@ -67,9 +74,15 @@ func main() {
 	logger.Println("Quit signal received, initializing shutdown...")
 	logger.Println("Stopping HTTP server")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	err := server.Shutdown(ctx)
+	err = server.Shutdown(ctx)
 	if err != nil {
 		logger.Println(err)
 	}
 	cancel()
+
+	logger.Println("Stopping mDNS service")
+	err = mdns.Shutdown()
+	if err != nil {
+		logger.Println(err)
+	}
 }
