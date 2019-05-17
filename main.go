@@ -21,6 +21,7 @@ var (
 	port  string
 	dir   string
 	iface string
+	fName string
 )
 
 func main() {
@@ -28,6 +29,7 @@ func main() {
 	flag.StringVar(&port, "port", "8080", "listening port")
 	flag.StringVar(&dir, "dir", "", "directory path to serve")
 	flag.StringVar(&iface, "iface", "wlp4s0", "interface to publish service info")
+	flag.StringVar(&fName, "friendlyName", "Gompa1", "A friendly name to identify this service")
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "[serve] ", log.LstdFlags|log.Lshortfile)
@@ -66,7 +68,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	mServer, err := mdns.Publish(iface, iPort, "stream_publisher._tcp", "Stream publisher service")
+	mServer, err := mdns.Publish(iface, iPort, "stream_publisher._tcp", fName)
 	if err != nil {
 		logger.Fatal(err)
 	}
