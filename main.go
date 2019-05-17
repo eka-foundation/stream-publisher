@@ -8,9 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
+	"github.com/agnivade/mdns"
 	"github.com/syntaqx/serve"
 )
 
@@ -59,7 +61,12 @@ func main() {
 		}
 	}()
 
-	mdns, err := publishmDNS(iface, port, logger)
+	iPort, err := strconv.Atoi(port)
+	if err != nil {
+		logger.Fatal(err)
+	}
+
+	mServer, err := mdns.Publish(iface, iPort, "stream_publisher._tcp", "Stream publisher service")
 	if err != nil {
 		logger.Fatal(err)
 	}
@@ -81,7 +88,7 @@ func main() {
 	cancel()
 
 	logger.Println("Stopping mDNS service")
-	err = mdns.Shutdown()
+	err = mServer.Shutdown()
 	if err != nil {
 		logger.Println(err)
 	}
