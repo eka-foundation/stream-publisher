@@ -17,11 +17,12 @@ import (
 )
 
 var (
-	host  string
-	port  string
-	dir   string
-	iface string
-	fName string
+	host   string
+	port   string
+	dir    string
+	iface  string
+	fName  string
+	prefix string
 )
 
 func main() {
@@ -30,6 +31,7 @@ func main() {
 	flag.StringVar(&dir, "dir", "", "directory path to serve")
 	flag.StringVar(&iface, "iface", "wlp4s0", "interface to publish service info")
 	flag.StringVar(&fName, "friendlyName", "Gompa1", "A friendly name to identify this service")
+	flag.StringVar(&prefix, "prefix", "so-1", "Playlist prefix")
 	flag.Parse()
 
 	logger := log.New(os.Stdout, "[serve] ", log.LstdFlags|log.Lshortfile)
@@ -68,7 +70,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	mServer, err := mdns.Publish(iface, iPort, "stream_publisher._tcp", fName)
+	mServer, err := mdns.Publish(iface, iPort, "stream_publisher._tcp", fName+"_"+prefix)
 	if err != nil {
 		logger.Fatal(err)
 	}
